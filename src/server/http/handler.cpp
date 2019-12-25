@@ -156,7 +156,6 @@ void HttpHandler::ProcessReceived(HttpClient* hclient, const char* request, size
     if (stat(file_path_str.c_str(), &sb) < 0) {
       common::ErrnoError err =
           hclient->SendError(protocol, common::http::HS_NOT_FOUND, extra_header, "File not found.", IsKeepAlive, hinf);
-      WARNING_LOG() << "File path: " << file_path_str << ", not found";
       if (err) {
         DEBUG_MSG_ERROR(err, common::logging::LOG_LEVEL_ERR);
       }
