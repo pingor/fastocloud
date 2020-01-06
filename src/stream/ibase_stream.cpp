@@ -88,6 +88,8 @@ void RedirectGstLog(GstDebugCategory* category,
                     gpointer data) {
   UNUSED(data);
   UNUSED(object);
+  UNUSED(message);
+  UNUSED(category);
 
   if (level == GST_LEVEL_ERROR) {
     ERROR_LOG() << gst_debug_category_get_name(category) << " " << file << ":" << line << " " << function << " "

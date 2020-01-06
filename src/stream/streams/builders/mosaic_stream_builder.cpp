@@ -182,7 +182,7 @@ bool MosaicStreamBuilder::InitPipeline() {
     }
   }
 
-  Connector conn{vmix, amix};
+  Connector conn{vmix, amix, nullptr};
   if (config->HaveVideo()) {
     elements::video::ElementCairoOverlay* cairo =
         new elements::video::ElementCairoOverlay(common::MemSPrintf(CAIRO_NAME_1U, 0));

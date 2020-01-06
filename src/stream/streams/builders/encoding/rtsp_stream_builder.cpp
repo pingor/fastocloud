@@ -47,7 +47,7 @@ Connector RtspEncodingStreamBuilder::BuildInput() {
   elements::ElementDecodebin* decodebin = new elements::ElementDecodebin(common::MemSPrintf(DECODEBIN_NAME_1U, 0));
   ElementAdd(decodebin);
   HandleDecodebinCreated(decodebin);
-  return {nullptr, nullptr};
+  return {nullptr, nullptr, nullptr};
 }
 
 void RtspEncodingStreamBuilder::HandleRTSPSrcCreated(elements::sources::ElementRTSPSrc* src) {

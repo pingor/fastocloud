@@ -49,7 +49,7 @@ Connector RtspRelayStreamBuilder::BuildInput() {
   ElementAdd(decodebin);
   HandleDecodebinCreated(decodebin);
 
-  return {nullptr, nullptr};
+  return {nullptr, nullptr, nullptr};
 }
 
 void RtspRelayStreamBuilder::HandleRTSPSrcCreated(elements::sources::ElementRTSPSrc* src) {

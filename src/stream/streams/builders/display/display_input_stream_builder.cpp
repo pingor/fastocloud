@@ -50,7 +50,7 @@ Connector DisplayInputStreamBuilder::BuildInput() {
     }
     delete src_pad;
   }
-  return {video, audio};
+  return {video, audio, nullptr};
 }
 
 Connector DisplayInputStreamBuilder::BuildUdbConnections(Connector conn) {

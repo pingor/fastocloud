@@ -50,7 +50,7 @@ Connector TestInputStreamBuilder::BuildInput() {
     }
     delete src_pad;
   }
-  return {video, audio};
+  return {video, audio, nullptr};
 }
 
 Connector TestInputStreamBuilder::BuildUdbConnections(Connector conn) {

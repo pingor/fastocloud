@@ -54,7 +54,7 @@ Connector ScreenStreamBuilder::BuildInput() {
     }
     delete src_pad;
   }
-  return {video, audio};
+  return {video, audio, nullptr};
 }
 
 Connector ScreenStreamBuilder::BuildUdbConnections(Connector conn) {

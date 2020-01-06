@@ -72,7 +72,7 @@ Connector SrcDecodeStreamBuilder::BuildInput() {
   ElementLink(src, decodebin);
   HandleDecodebinCreated(decodebin);
 
-  return {nullptr, nullptr};
+  return {nullptr, nullptr, nullptr};
 }
 
 void SrcDecodeStreamBuilder::HandleDecodebinCreated(elements::ElementDecodebin* decodebin) {

@@ -99,7 +99,7 @@ Connector DeviceStreamBuilder::BuildInput() {
     HandleDecodebinCreated(decodebin);
     audio = decodebin;
   }
-  return {nullptr, nullptr};
+  return {nullptr, nullptr, nullptr};
 }
 
 }  // namespace encoding
