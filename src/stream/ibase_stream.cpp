@@ -528,9 +528,18 @@ GstBusSyncReply IBaseStream::HandleSyncBusMessageReceived(GstBus* bus, GstMessag
     const GstStructure* structure = gst_message_get_structure(message);
     const char* element_name = gst_structure_get_name(structure);
     if (strcmp(element_name, "GstMultiFileSink") == 0) {  // splitmuxsink-fragment-closed
-      GstClockTime running_time;
+      // GstClockTime running_time;
       const char* file_path_str = gst_structure_get_string(structure, "filename");
-      gst_structure_get_clock_time(structure, "running-time", &running_time);
+      // gst_structure_get_clock_time(structure, "running-time", &running_time);
+      for (const OutputUri& output : config_->GetOutput()) {
+        common::uri::Url uri = output.GetOutput();
+        common::uri::Url::scheme scheme = uri.GetScheme();
+        if (scheme == common::uri::Url::http || scheme == common::uri::Url::https) {
+          if (output.GetHlsType() == OutputUri::HLS_PUSH) {
+            // HLS PUSH
+          }
+        }
+      }
     }
   }
 
