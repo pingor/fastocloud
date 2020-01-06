@@ -18,6 +18,7 @@
 
 #include <common/error.h>
 #include <common/file_system/path.h>
+#include <common/uri/url.h>
 
 namespace fastocloud {
 
@@ -26,5 +27,7 @@ void RemoveOldFilesByTime(const common::file_system::ascii_directory_string_path
                           common::utctime_t max_life_secs,
                           const char* ext);
 void RemoveFilesByExtension(const common::file_system::ascii_directory_string_path& dir, const char* ext);
+
+common::Error PostHttp11File(const common::file_system::ascii_file_string_path& file_path, const common::uri::Url& url);
 
 }  // namespace fastocloud
