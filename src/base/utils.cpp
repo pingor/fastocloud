@@ -152,7 +152,8 @@ void RemoveOldFilesByTime(const common::file_system::ascii_directory_string_path
   DEBUG_LOG() << "Finished clean up folder: " << path;
 }
 
-common::Error PostHttp11File(const common::file_system::ascii_file_string_path& file_path, const common::uri::Url& url) {
+common::Error PostHttp11File(const common::file_system::ascii_file_string_path& file_path,
+                             const common::uri::Url& url) {
   common::net::HostAndPort http_server_address;
   if (!GetPostServerFromUrl(url, &http_server_address)) {
     return common::make_error_inval();
