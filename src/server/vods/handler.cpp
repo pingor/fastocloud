@@ -151,9 +151,9 @@ void VodsHandler::ProcessReceived(VodsClient* hclient, const char* request, size
       observer_->OnHttpRequest(hclient, *file_path, &recommend_status);
     }
 
-    if (recommend_status == common::http::HS_NOT_ALLOWED) {
+    if (recommend_status == common::http::HS_FORBIDDEN) {
       common::ErrnoError err =
-          hclient->SendError(protocol, common::http::HS_NOT_ALLOWED, extra_header, "Rejected.", IsKeepAlive, hinf);
+          hclient->SendError(protocol, common::http::HS_FORBIDDEN, extra_header, "Rejected.", IsKeepAlive, hinf);
       if (err) {
         DEBUG_MSG_ERROR(err, common::logging::LOG_LEVEL_ERR);
       }

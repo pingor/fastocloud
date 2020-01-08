@@ -542,7 +542,7 @@ void ProcessSlaveWrapper::OnHttpRequest(common::libev::http::HttpClient* client,
       auto config = vods_links_.Find(http_root);
       if (!config) {
         if (recommend_status) {
-          *recommend_status = common::http::HS_NOT_ALLOWED;
+          *recommend_status = common::http::HS_FORBIDDEN;
         }
         return;
       }
@@ -570,7 +570,7 @@ void ProcessSlaveWrapper::OnHttpRequest(common::libev::http::HttpClient* client,
       auto config = cods_links_.Find(http_root);
       if (!config) {
         if (recommend_status) {
-          *recommend_status = common::http::HS_NOT_ALLOWED;
+          *recommend_status = common::http::HS_FORBIDDEN;
         }
         return;
       }
