@@ -19,16 +19,17 @@
 
 #include <common/libev/io_loop_observer.h>
 #include <common/net/types.h>
+#include <common/threads/ts_queue.h>
 
 #include <fastotv/protocol/protocol.h>
 #include <fastotv/protocol/types.h>
 
-#include "base/stream_config.h"
 #include "base/stream_info.h"
 #include "base/types.h"
 
 #include "server/base/ihttp_requests_observer.h"
 #include "server/config.h"
+#include "server/links_holder_ts.h"
 
 namespace fastocloud {
 namespace server {
@@ -66,7 +67,9 @@ class ProcessSlaveWrapper : public common::libev::IoLoopObserver, public server:
   void DataReadyToWrite(common::libev::IoClient* client) override;
   void PostLooped(common::libev::IoLoop* server) override;
 
-  void OnHttpRequest(common::libev::http::HttpClient* client, const file_path_t& file) override;
+  void OnHttpRequest(common::libev::http::HttpClient* client,
+                     const file_path_t& file,
+                     common::http::http_status* recommend_status) override;
 
   virtual common::ErrnoError HandleRequestServiceCommand(ProtocoledDaemonClient* dclient,
                                                          const fastotv::protocol::request_t* req) WARN_UNUSED_RESULT;
@@ -153,8 +156,8 @@ class ProcessSlaveWrapper : public common::libev::IoLoopObserver, public server:
   common::libev::timer_id_t quit_cleanup_timer_;
   NodeStats* node_stats_;
 
-  std::map<common::file_system::ascii_directory_string_path, serialized_stream_t> vods_links_;
-  std::map<common::file_system::ascii_directory_string_path, serialized_stream_t> cods_links_;
+  LinksHolderTS vods_links_;
+  LinksHolderTS cods_links_;
 };
 
 }  // namespace server

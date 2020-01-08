@@ -146,14 +146,33 @@ void VodsHandler::ProcessReceived(VodsClient* hclient, const char* request, size
       goto finish;
     }
 
+    common::http::http_status recommend_status = common::http::HS_OK;
     if (observer_) {
-      observer_->OnHttpRequest(hclient, *file_path);
+      observer_->OnHttpRequest(hclient, *file_path, &recommend_status);
+    }
+
+    if (recommend_status == common::http::HS_NOT_ALLOWED) {
+      common::ErrnoError err =
+          hclient->SendError(protocol, common::http::HS_NOT_ALLOWED, extra_header, "Rejected.", IsKeepAlive, hinf);
+      if (err) {
+        DEBUG_MSG_ERROR(err, common::logging::LOG_LEVEL_ERR);
+      }
+      goto finish;
     }
 
     const std::string file_path_str = file_path->GetPath();
     int open_flags = O_RDONLY;
     struct stat sb;
     if (stat(file_path_str.c_str(), &sb) < 0) {
+      if (recommend_status == common::http::HS_ACCEPTED) {
+        common::ErrnoError err = hclient->SendError(protocol, common::http::HS_ACCEPTED, extra_header,
+                                                    "Request in progress.", IsKeepAlive, hinf);
+        if (err) {
+          DEBUG_MSG_ERROR(err, common::logging::LOG_LEVEL_ERR);
+        }
+        goto finish;
+      }
+
       common::ErrnoError err =
           hclient->SendError(protocol, common::http::HS_NOT_FOUND, extra_header, "File not found.", IsKeepAlive, hinf);
       if (err) {

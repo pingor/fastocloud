@@ -159,6 +159,7 @@ SET(SERVER_HEADERS
 
   ${CMAKE_SOURCE_DIR}/src/server/child.h
   ${CMAKE_SOURCE_DIR}/src/server/child_stream.h
+  ${CMAKE_SOURCE_DIR}/src/server/links_holder_ts.h
   ${CMAKE_SOURCE_DIR}/src/server/process_slave_wrapper.h
   ${CMAKE_SOURCE_DIR}/src/server/config.h
 
@@ -176,6 +177,7 @@ SET(SERVER_SOURCES
 
   ${CMAKE_SOURCE_DIR}/src/server/child.cpp
   ${CMAKE_SOURCE_DIR}/src/server/child_stream.cpp
+  ${CMAKE_SOURCE_DIR}/src/server/links_holder_ts.cpp
   ${CMAKE_SOURCE_DIR}/src/server/process_slave_wrapper.cpp
   ${CMAKE_SOURCE_DIR}/src/server/config.cpp
 

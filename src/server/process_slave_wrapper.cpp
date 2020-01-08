@@ -316,7 +316,8 @@ void ProcessSlaveWrapper::TimerEmited(common::libev::IoLoop* server, common::lib
     }
   } else if (check_cods_vods_timer_ == id) {
     fastotv::timestamp_t current_time = common::time::current_utc_mstime();
-    for (auto it = cods_links_.begin(); it != cods_links_.end(); ++it) {
+    const auto copy_cods = cods_links_.Copy();
+    for (auto it = copy_cods.begin(); it != copy_cods.end(); ++it) {
       serialized_stream_t conf = it->second;
       fastotv::stream_id_t sid = GetSid(conf);
       Child* cod = FindChildByID(sid);
@@ -377,6 +378,7 @@ void ProcessSlaveWrapper::ChildStatusChanged(common::libev::IoChild* child, int 
 }
 
 Child* ProcessSlaveWrapper::FindChildByID(fastotv::stream_id_t cid) const {
+  CHECK(loop_->IsLoopThread());
   DaemonServer* server = static_cast<DaemonServer*>(loop_);
   auto childs = server->GetChilds();
   for (auto* child : childs) {
@@ -529,50 +531,72 @@ void ProcessSlaveWrapper::PostLooped(common::libev::IoLoop* server) {
   }
 }
 
-void ProcessSlaveWrapper::OnHttpRequest(common::libev::http::HttpClient* client, const file_path_t& file) {
+void ProcessSlaveWrapper::OnHttpRequest(common::libev::http::HttpClient* client,
+                                        const file_path_t& file,
+                                        common::http::http_status* recommend_status) {
   if (client->GetServer() == vods_server_) {
     std::string ext = file.GetExtension();
     bool is_m3u8 = common::EqualsASCII(ext, M3U8_EXTENSION, false);
-    bool is_ts = common::EqualsASCII(ext, TS_EXTENSION, false);
-    if (is_m3u8 || is_ts) {
-      loop_->ExecInLoopThread([this, is_m3u8, file]() {
-        const common::file_system::ascii_directory_string_path http_root(file.GetDirectory());
-        auto it = vods_links_.find(http_root);
-        if (it == vods_links_.end()) {
-          return;
+    if (is_m3u8) {
+      const common::file_system::ascii_directory_string_path http_root(file.GetDirectory());
+      auto config = vods_links_.Find(http_root);
+      if (!config) {
+        if (recommend_status) {
+          *recommend_status = common::http::HS_NOT_ALLOWED;
         }
+        return;
+      }
 
-        if (is_m3u8) {
-          bool is_full_vod = CheckIsFullVod(file);
-          if (!is_full_vod) {
-            CreateChildStream(it->second);
-          }
+      bool is_full_vod = CheckIsFullVod(file);
+      if (is_full_vod) {
+        if (recommend_status) {
+          *recommend_status = common::http::HS_OK;
         }
-      });
+        return;
+      }
+
+      loop_->ExecInLoopThread([this, config]() { CreateChildStream(config); });
+      if (recommend_status) {
+        *recommend_status = common::http::HS_ACCEPTED;
+      }
+      return;
     }
   } else if (client->GetServer() == cods_server_) {
     std::string ext = file.GetExtension();
     bool is_m3u8 = common::EqualsASCII(ext, M3U8_EXTENSION, false);
     bool is_ts = common::EqualsASCII(ext, TS_EXTENSION, false);
     if (is_m3u8 || is_ts) {
-      loop_->ExecInLoopThread([this, is_m3u8, file]() {
-        const common::file_system::ascii_directory_string_path http_root(file.GetDirectory());
-        auto it = cods_links_.find(http_root);
-        if (it == cods_links_.end()) {
-          return;
+      const common::file_system::ascii_directory_string_path http_root(file.GetDirectory());
+      auto config = cods_links_.Find(http_root);
+      if (!config) {
+        if (recommend_status) {
+          *recommend_status = common::http::HS_NOT_ALLOWED;
         }
+        return;
+      }
 
+      loop_->ExecInLoopThread([this, is_m3u8, config]() {
         if (is_m3u8) {
-          CreateChildStream(it->second);
+          CreateChildStream(config);
         }
 
-        fastotv::stream_id_t sid = GetSid(it->second);
+        fastotv::stream_id_t sid = GetSid(config);
         Child* cod = FindChildByID(sid);
         if (cod) {
           cod->UpdateTimestamp();
         }
       });
+      if (is_m3u8) {
+        if (recommend_status) {
+          *recommend_status = common::http::HS_ACCEPTED;
+        }
+      }
+      return;
     }
+  }
+
+  if (recommend_status) {
+    *recommend_status = common::http::HS_OK;
   }
 }
 
@@ -982,8 +1006,8 @@ common::ErrnoError ProcessSlaveWrapper::HandleRequestClientSyncService(Protocole
     }
 
     // refresh vods
-    vods_links_.clear();
-    cods_links_.clear();
+    vods_links_.Clear();
+    cods_links_.Clear();
     for (StreamConfig config : sync_info.GetStreams()) {
       AddStreamLine(config);
     }
@@ -1017,7 +1041,7 @@ void ProcessSlaveWrapper::AddStreamLine(const serialized_stream_t& config_args) 
         if (ouri.GetScheme() == common::uri::Url::http) {
           const common::file_system::ascii_directory_string_path http_root = out_uri.GetHttpRoot();
           config_args->Insert(CLEANUP_TS_FIELD, common::Value::CreateBooleanValue(false));
-          vods_links_[http_root] = config_args;
+          vods_links_.Insert(http_root, config_args);
         }
       }
     }
@@ -1028,7 +1052,7 @@ void ProcessSlaveWrapper::AddStreamLine(const serialized_stream_t& config_args) 
         common::uri::Url ouri = out_uri.GetOutput();
         if (ouri.GetScheme() == common::uri::Url::http) {
           const common::file_system::ascii_directory_string_path http_root = out_uri.GetHttpRoot();
-          cods_links_[http_root] = config_args;
+          cods_links_.Insert(http_root, config_args);
         }
       }
     }

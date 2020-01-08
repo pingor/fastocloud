@@ -14,23 +14,25 @@
 
 #pragma once
 
-#include <common/file_system/path.h>
-#include <common/libev/http/http_client.h>
+#include <mutex>
+#include <map>
+
+#include "base/stream_config.h"
 
 namespace fastocloud {
 namespace server {
-namespace base {
 
-class IHttpRequestsObserver {
+class LinksHolderTS {
  public:
-  typedef common::file_system::ascii_file_string_path file_path_t;
+  StreamConfig Find(const common::file_system::ascii_directory_string_path& path);
+  void Insert(const common::file_system::ascii_directory_string_path& path, StreamConfig config);
+  void Clear();
 
-  virtual void OnHttpRequest(common::libev::http::HttpClient* client,
-                             const file_path_t& file,
-                             common::http::http_status* recommend_status) = 0;
-  virtual ~IHttpRequestsObserver();
+  std::map<common::file_system::ascii_directory_string_path, StreamConfig> Copy();
+
+ private:
+  std::mutex mutex_;
+  std::map<common::file_system::ascii_directory_string_path, StreamConfig> links_;
 };
-
-}  // namespace base
 }  // namespace server
 }  // namespace fastocloud

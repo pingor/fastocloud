@@ -12,25 +12,37 @@
     along with fastocloud.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include <map>
 
-#include <common/file_system/path.h>
-#include <common/libev/http/http_client.h>
+#include "server/links_holder_ts.h"
 
 namespace fastocloud {
 namespace server {
-namespace base {
 
-class IHttpRequestsObserver {
- public:
-  typedef common::file_system::ascii_file_string_path file_path_t;
+StreamConfig LinksHolderTS::Find(const common::file_system::ascii_directory_string_path& path) {
+  std::unique_lock<std::mutex> lock(mutex_);
+  auto it = links_.find(path);
+  if (it == links_.end()) {
+    return StreamConfig();
+  }
 
-  virtual void OnHttpRequest(common::libev::http::HttpClient* client,
-                             const file_path_t& file,
-                             common::http::http_status* recommend_status) = 0;
-  virtual ~IHttpRequestsObserver();
-};
+  return it->second;
+}
 
-}  // namespace base
+void LinksHolderTS::Insert(const common::file_system::ascii_directory_string_path& path, StreamConfig config) {
+  std::unique_lock<std::mutex> lock(mutex_);
+  links_[path] = config;
+}
+
+void LinksHolderTS::Clear() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  links_.clear();
+}
+
+std::map<common::file_system::ascii_directory_string_path, StreamConfig> LinksHolderTS::Copy() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  return links_;
+}
+
 }  // namespace server
 }  // namespace fastocloud

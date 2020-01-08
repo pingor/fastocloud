@@ -146,8 +146,9 @@ void HttpHandler::ProcessReceived(HttpClient* hclient, const char* request, size
       goto finish;
     }
 
+    common::http::http_status recommend_status;
     if (observer_) {
-      observer_->OnHttpRequest(hclient, *file_path);
+      observer_->OnHttpRequest(hclient, *file_path, &recommend_status);
     }
 
     const std::string file_path_str = file_path->GetPath();
